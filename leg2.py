@@ -5,6 +5,7 @@ import ThunderBorg3 as ThunderBorg
 import sys
 import math
 global TB
+bias = 1.165
 
 TB = ThunderBorg.ThunderBorg()  
 TB.Init()
@@ -73,9 +74,9 @@ while True:
 # Initialize BNO055 sensor
 
 # PID constants
-KP = 0.001# Proportional constant
-KI = 0 # Integral constant
-KD = 0 # Derivative constant
+KP = 0.002# Proportional constant
+KI = 0.0000 # Integral constant
+KD = 0.000 # Derivative constant
 
 # PID variables
 prev_error = 0
@@ -83,7 +84,7 @@ integral = 0
 
 # Target heading angle
 target_heading = 90.0
-minvel = 0.33
+minvel = 0.4
 
 # Function to calculate the PID control output
 def pid_controller(target):
@@ -104,13 +105,27 @@ def pid_controller(target):
         print("{} {}".format(error, sensor.euler[0]))
         error = target - sensor.euler[0]
     TB.MotorsOff()
-    return error
+    return error#
 # Main loop
+def MoveForward(distance,bias):
+    constantSpeed = 0.9
+    TB.SetMotor1(0.5*bias)
+    TB.SetMotor2(-0.5)
+    time.sleep(distance/constantSpeed)
+    TB.MotorsOff()
+def MoveBackward(distance,bias):
+    constantSpeed = 0.9
+    TB.SetMotor1(-0.5*bias)
+    TB.SetMotor2(0.5)
+    time.sleep(distance/constantSpeed)
+    TB.MotorsOff()
 try:
-    while True:
-        error = pid_controller(180)
-        time.sleep(0.1)
-        print("{} {}".format(error, sensor.euler[0]))
+    #error = pid_controller(180)
+    MoveForward(1, bias)
+    time.sleep(0.1)
+    pid_controller(270)
+    MoveForward(2.4, bias)
+    print("{} {}".format(error, sensor.euler[0]))
 
 except KeyboardInterrupt:
     # Stop motors on keyboard interrupt
