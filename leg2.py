@@ -73,9 +73,9 @@ while True:
 # Initialize BNO055 sensor
 
 # PID constants
-KP = 0.0006  # Proportional constant
-KI = 0.4 # Integral constant
-KD = 0.0004  # Derivative constant
+KP = 0.001# Proportional constant
+KI = 0 # Integral constant
+KD = 0 # Derivative constant
 
 # PID variables
 prev_error = 0
@@ -89,23 +89,28 @@ minvel = 0.33
 def pid_controller(target):
     #proportional part
     prev_error = 0
+    total_error = 0
     error = target - sensor.euler[0]
-    while abs(error)>=5:
+    while abs(error)>=1:
         if error<0:
-            TB.SetMotor1(-minvel+error*KP+prev_error*KD)
-            TB.SetMotor2(-minvel+error*KP+prev_error*KD)
-        elif error:
-            TB.SetMotor1(minvel+error*KP+prev_error*KD)
-            TB.SetMotor2(minvel+error*KP+prev_error*KD)
-        
+            TB.SetMotor1(-minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
+            TB.SetMotor2(-minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
+        elif error>=0:
+            TB.SetMotor1(minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
+            TB.SetMotor2(minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
+            
+        total_error += error
         prev_error = error
-        print("{} ".format(error))
+        print("{} {}".format(error, sensor.euler[0]))
         error = target - sensor.euler[0]
+    TB.MotorsOff()
+    return error
 # Main loop
 try:
     while True:
-        pid_controller(240)
+        error = pid_controller(180)
         time.sleep(0.1)
+        print("{} {}".format(error, sensor.euler[0]))
 
 except KeyboardInterrupt:
     # Stop motors on keyboard interrupt
