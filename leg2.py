@@ -74,7 +74,7 @@ while True:
 # Initialize BNO055 sensor
 
 # PID constants
-KP = 0.002# Proportional constant
+KP = 0.0001# Proportional constant
 KI = 0.0000 # Integral constant
 KD = 0.000 # Derivative constant
 
@@ -91,26 +91,35 @@ def pid_controller(target):
     #proportional part
     prev_error = 0
     total_error = 0
+    target = target%360
+    """
     while target > 180:
         target -=360
     while target < -180:
         target +=360
-    error = target - sensor.euler[0]
-    print(error)
+        """
+    error = target - float(sensor.euler[0])
+    if error > 180:
+        error = -(360 - error)
     while abs(error)>=1:
-        time.sleep(2)
         if error<0:
             TB.SetMotor1(-minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
             TB.SetMotor2(-minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
         elif error>=0:
             TB.SetMotor1(minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
             TB.SetMotor2(minvel+(error*KP)+(prev_error*KD)+(total_error*KI))
-        print(error)
             
         total_error += error
         prev_error = error
         print("{} {}".format(error, sensor.euler[0]))
-        error = target - sensor.euler[0]
+        try:
+            error = target - float(sensor.euler[0])
+            if error > 180:
+                error = -(360 - error)
+            if error <=-180:
+                error = error + 360
+        except:
+            error = prev_error
     TB.MotorsOff()
     return error
 # Main loop
@@ -126,14 +135,21 @@ def MoveBackward(distance,bias):
     TB.SetMotor2(0.5)
     time.sleep(distance/constantSpeed)
     TB.MotorsOff()
+    """
 try:
     #error = pid_controller(180)
     #MoveForward(1, bias)
     #time.sleep(0.1)
-    pid_controller(90)
+    for i in range(5):
+        pid_controller(90)
+        pid_controller(180)
+        pid_controller(90)
+        pid_controller(0)
+    
     #MoveForward(2.4, bias)
     #print("{} {}".format(error, sensor.euler[0]))
 
 except KeyboardInterrupt:
     # Stop motors on keyboard interrupt
     TB.MotorsOff()
+    """
