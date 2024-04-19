@@ -9,7 +9,7 @@ picam = Picamera2()
 config = picam.create_preview_configuration()
 picam.configure(config)
 
-picam.start_preview(Preview.QTGL)
+#picam.start_preview(Preview.QTGL)
 
 def Green(picture):
     lower_range = (40, 50, 50) # lower range of gren color in HSV
@@ -80,3 +80,4 @@ def idColour():
         return ("Blue")
     elif pixelCount[-1] == green_pixels:
         return ("Green")
+print(idColour())
